@@ -1,0 +1,31 @@
+I have encountered the following error when I was trying to start my oracle DB:
+
+ORA-00821: Specified value of sga_target ****M is too small, needs to be at least ****M
+Environment detail:
+
+DB Version: Oracle Database 11g Release 11.2.0.4.0 - 64bit Production
+DB server operating system: RHEL 7.9
+Initially, I restarted the database server, but unfortunately, the issue persisted. I then proceeded to locate the memory-related parameters for the System Global Area (SGA) in the database configuration files.
+
+The configuration file path is:
+
+$ORACLE_HOME/dbs/init.ora
+However, I was unable to find any relevant configurations in this file.
+
+Subsequently, I identified the following two parameters in the file located at $ORACLE_HOME/dbs/spfile****.ora:
+
+*.sga_max_size=4033164800
+*.sga_target=4033164800
+Since the spfile****.ora file is a binary file and cannot be edited directly, I needed to convert it to a text-readable format.
+
+To achieve this, I logged in as sysdba and executed the following command to create a parameter file (PFILE):
+
+CREATE PFILE='/tmp/temp_params.ora' FROM SPFILE;
+This created an editable file, which I then modified as follows:
+
+*.sga_max_size=5033164800
+*.sga_target=5033164800
+After saving the changes, I logged in again as sysdba and executed the following command to recreate the spfile with the updated parameters:
+
+CREATE SPFILE='/<put your oracle home path>/dbs/spfile****.ora' FROM PFILE='/tmp/temp_params.ora';
+Finally, I was able to start the database without encountering the error.
